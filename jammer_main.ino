@@ -14,8 +14,6 @@ RF24 radio(16, 15, 16000000);
 
 byte i = 45;
 
-unsigned int flag = 0;
-
 ezButton toggleSwitch(33);
 
 
@@ -32,7 +30,7 @@ void initHP() {
   hp->begin();
   if (radio.begin(hp)) {
     delay(200);
-    Serial.println("BLE Jammer is Started !!!");
+    Serial.println("Jammer is Started !!!");
     radio.setAutoAck(false);
     radio.stopListening();
     radio.setRetries(0, 0);
@@ -44,42 +42,19 @@ void initHP() {
     radio.printPrettyDetails();
     radio.startConstCarrier(RF24_PA_MAX, i);
   } else {
-    Serial.println("BLE Jammer couldn't be started !!!");
+    Serial.println("Jammer couldn't be started !!!");
   }
-}
-void two() {
-
-  ///CHANNEL WITH 2 SPACING HOPPING
-  if (flag == 0) {
-    i += 3;
-  } else {
-    i -= 3;
-  }
-
-  if ((i > 79) && (flag == 0)) {
-    flag = 1;
-  } else if ((i < 2) && (flag == 1)) {
-    flag = 0;
-  }
-
-  radio.setChannel(i);
-  //Serial.println(i);
 }
 
 void one() {
   ////SWEEP CHANNEL
-  for (int i = 0; i < 79; i++) {
+  for (int i = 2; i <= 94; i = i+5) {
     radio.setChannel(i);
+    if(i == 72) {
+      i = i-3;
+    }
   }
 }
-
-/*YOU CAN DO RANDOM CHANNEL 
-
-radio.setChannel(random(79));
-*/
-
-
-
 
 void loop(void) {
 
@@ -92,11 +67,7 @@ void loop(void) {
 
   int state = toggleSwitch.getState();
 
-
-  if (state == HIGH)
-    two();
-
-  else {
+  if (state == LOW)
     one();
-  }
+
 }
