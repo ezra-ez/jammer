@@ -5,8 +5,8 @@
  
 #include "WiFi.h"
 
-const char* ssid = "da phone";
-const char* password = "dionisius1";
+const char* ssid = "ssid"; //isi ssid
+const char* password = "password"; //isi password
 
 
 void setup()
@@ -84,7 +84,7 @@ void loop()
  
     // Delete the scan result to free memory for code below.
     WiFi.scanDelete();
-
+/*
     WiFi.begin(ssid, password);
     Serial.println("\nConnecting");
 
@@ -98,6 +98,6 @@ void loop()
     Serial.println(WiFi.localIP());
 
     WiFi.disconnect();   
- 
+ */
     // Wait a bit before scanning again.
     delay(1000);
