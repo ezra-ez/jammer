@@ -3,19 +3,36 @@
 *  Full Tutorial @ https://deepbluembedded.com/esp32-wifi-library-examples-tutorial-arduino/
 */
  
-#include "WiFi.h"
+#include <WiFi.h>
+#include <WiFiUdp.h>
 
-const char* ssid = "ssid"; //isi ssid
-const char* password = "password"; //isi password
+// SSID dan Password WiFi
+const char * ssid = "isi ssid"; //ssid wifi
+const char * pwd = "isi_password"; //password wifi
+
+// IP Address dan Port Server
+const char * udpAddress = "192.168.0.0"; //ganti dengan ip address PC - didapat dari run program python
+const int udpPort = 9999;
+
+// Objek Kelas WiFiUDP
+WiFiUDP udp;
 
 
 void setup()
 {
     Serial.begin(115200);
  
-    // Set WiFi to station mode and disconnect from an AP if it was previously connected.
     WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
+
+    
+    WiFi.begin(ssid, pwd);
+    Serial.println("\nConnecting");
+
+    while(WiFi.status() != WL_CONNECTED){
+        Serial.print(".");
+        delay(500);
+    }
+    
     delay(100);
  
     Serial.println("Setup done");
@@ -28,76 +45,43 @@ void loop()
     // WiFi.scanNetworks will return the number of networks found.
     int n = WiFi.scanNetworks();
     Serial.println("Scan done");
+
+    String str_data = "";
+    
     if (n == 0) {
         Serial.println("no networks found");
-    } else {
+    } 
+    else {
         Serial.print(n);
         Serial.println(" networks found");
         Serial.println("Nr | SSID                             | RSSI | CH ");
         for (int i = 0; i < n; ++i) {
             // Print SSID and RSSI for each network found
-            Serial.printf("%2d",i + 1);
-            Serial.print(" | ");
-            Serial.printf("%-32.32s", WiFi.SSID(i).c_str());
-            Serial.print(" | ");
-            Serial.printf("%4d", WiFi.RSSI(i));
-            Serial.print(" | ");
-            Serial.printf("%2d", WiFi.channel(i));
-            /*Serial.print(" | ");
-            switch (WiFi.encryptionType(i))
-            {
-            case WIFI_AUTH_OPEN:
-                Serial.print("open");
-                break;
-            case WIFI_AUTH_WEP:
-                Serial.print("WEP");
-                break;
-            case WIFI_AUTH_WPA_PSK:
-                Serial.print("WPA");
-                break;
-            case WIFI_AUTH_WPA2_PSK:
-                Serial.print("WPA2");
-                break;
-            case WIFI_AUTH_WPA_WPA2_PSK:
-                Serial.print("WPA+WPA2");
-                break;
-            case WIFI_AUTH_WPA2_ENTERPRISE:
-                Serial.print("WPA2-EAP");
-                break;
-            case WIFI_AUTH_WPA3_PSK:
-                Serial.print("WPA3");
-                break;
-            case WIFI_AUTH_WPA2_WPA3_PSK:
-                Serial.print("WPA2+WPA3");
-                break;
-            case WIFI_AUTH_WAPI_PSK:
-                Serial.print("WAPI");
-                break;
-            default:
-                Serial.print("unknown");
-            }*/
-            Serial.println();
+            str_data = str_data+String(WiFi.SSID(i).c_str())+" | "+String(WiFi.RSSI(i))+" | "+String(WiFi.channel(i))+"\n";
             delay(10);
         }
+        Serial.println(str_data);
     }
     Serial.println("");
  
     // Delete the scan result to free memory for code below.
     WiFi.scanDelete();
-/*
-    WiFi.begin(ssid, password);
-    Serial.println("\nConnecting");
 
-    while(WiFi.status() != WL_CONNECTED){
-        Serial.print(".");
-        delay(100);
-    }
+    int size_data;
+    // variabel penampung untuk komunikasi
+    uint8_t buffer_terima[200] = "";
 
-    Serial.println("\nConnected to the WiFi network");
-    Serial.print("Local ESP32 IP: ");
-    Serial.println(WiFi.localIP());
+    memcpy(buffer_terima, str_data.c_str(), 200);
 
-    WiFi.disconnect();   
- */
+    Serial.println("sending data.....");
+  
+    // Mulai menghubungkan dan mengirim data ke Server
+    udp.beginPacket(udpAddress,udpPort);
+    udp.write(buffer_terima, sizeof(buffer_terima));
+    udp.endPacket();
+
+    Serial.println("data sent");
+ 
     // Wait a bit before scanning again.
     delay(1000);
+}
